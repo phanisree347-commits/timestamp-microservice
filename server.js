@@ -8,28 +8,28 @@ app.get("/", (req, res) => {
 
 // Single route with optional date parameter
 app.get("/api/:date?", (req, res) => {
-  let dateParam = req.params.date;
+  let { date } = req.params;
+  let parsedDate;
 
-  let date;
-
-  if (!dateParam) {
-    // No parameter → current date
-    date = new Date();
-  } else if (/^\d+$/.test(dateParam)) {
-    // Only digits → treat as Unix timestamp
-    date = new Date(parseInt(dateParam));
+  if (!date) {
+    // No date provided → use current date
+    parsedDate = new Date();
+  } else if (/^\d+$/.test(date)) {
+    // Unix timestamp in milliseconds
+    parsedDate = new Date(parseInt(date));
   } else {
-    // Treat as date string
-    date = new Date(dateParam);
+    // ISO date string
+    parsedDate = new Date(date);
   }
 
-  if (date.toString() === "Invalid Date") {
+  // Check for invalid date
+  if (parsedDate.toString() === "Invalid Date") {
     return res.json({ error: "Invalid Date" });
   }
 
   res.json({
-    unix: date.getTime(),
-    utc: date.toUTCString(),
+    unix: parsedDate.getTime(),
+    utc: parsedDate.toUTCString(),
   });
 });
 
