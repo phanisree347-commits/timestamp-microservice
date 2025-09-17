@@ -3,32 +3,38 @@ const app = express();
 
 // Root route
 app.get("/", (req, res) => {
-  res.send("Timestamp Microservice API. Use /api/:date?");
+  res.send("Timestamp Microservice API. Use /api/:date");
 });
 
-// Single route for /api/:date? functionality
+// Single API route handling optional date
 app.get("/api/:date?", (req, res) => {
-  let { date } = req.params;
+  let dateParam = req.params.date;
 
-  // Empty parameter → current date
-  if (!date) date = new Date();
-  else if (/^\d+$/.test(date)) date = parseInt(date); // digits → Unix timestamp
-  else date = new Date(date); // else treat as ISO string
+  let date;
 
-  const parsedDate = new Date(date);
+  if (!dateParam) {
+    // Empty → use current date
+    date = new Date();
+  } else if (/^\d+$/.test(dateParam)) {
+    // Only digits → treat as Unix timestamp
+    date = new Date(parseInt(dateParam));
+  } else {
+    // Else → parse as ISO date string
+    date = new Date(dateParam);
+  }
 
-  // Invalid date
-  if (parsedDate.toString() === "Invalid Date") {
+  if (date.toString() === "Invalid Date") {
     return res.json({ error: "Invalid Date" });
   }
 
-  // Valid date
   res.json({
-    unix: parsedDate.getTime(),
-    utc: parsedDate.toUTCString(),
+    unix: date.getTime(),
+    utc: date.toUTCString(),
   });
 });
 
 // Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
